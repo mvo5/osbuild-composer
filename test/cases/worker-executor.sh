@@ -155,7 +155,7 @@ $AWS_CMD ec2 revoke-security-group-egress --group-id "$SGID" --security-group-ru
 
 ssh -oStrictHostKeyChecking=no -i "$KEYPAIR" "fedora@$EXECUTOR_IP" sudo mkdir -p /var/cache/osbuild-builder
 
-ssh -oStrictHostKeyChecking=no -i "$KEYPAIR" "fedora@$EXECUTOR_IP" sudo /usr/libexec/osbuild-composer/osbuild-jobsite-builder -builder-host 0.0.0.0 -build-path /var/cache/osbuild-builder &
+ssh -oStrictHostKeyChecking=no -i "$KEYPAIR" "fedora@$EXECUTOR_IP" sudo /usr/libexec/osbuild-composer/osbuild-jobsite-builder -host 0.0.0.0 -port 3333 -build-path /var/cache/osbuild-builder &
 subprocessPIDs+=( $! )
 
 # wait for compose to complete
