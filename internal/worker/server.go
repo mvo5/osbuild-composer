@@ -305,7 +305,7 @@ func (s *Server) JobDependencyChainErrors(id uuid.UUID) (*clienterrors.Error, er
 	}
 
 	if jobError := jobResult.JobError; jobError != nil {
-		depErrors := []*clienterrors.Error{}
+		var depErrors []error
 		if jobError.IsDependencyError() {
 			// check job's dependencies
 			for _, dep := range jobInfo.Deps {

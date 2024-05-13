@@ -34,9 +34,9 @@ func TestOSBuildJobResultTargetErrors(t *testing.T) {
 				},
 			},
 			targetErrors: []*clienterrors.Error{
-				clienterrors.WorkerClientError(clienterrors.ErrorInvalidTargetConfig, "can't login to AWS", target.TargetNameAWS),
-				clienterrors.WorkerClientError(clienterrors.ErrorUploadingImage, "can't upload image to VMWare", target.TargetNameVMWare),
-				clienterrors.WorkerClientError(clienterrors.ErrorUploadingImage, "failed to upload image to AWS S3", target.TargetNameAWSS3),
+				clienterrors.WorkerClientError(clienterrors.ErrorInvalidTargetConfig, "can't login to AWS", []error{fmt.Errorf("%s", target.TargetNameAWS)}),
+				clienterrors.WorkerClientError(clienterrors.ErrorUploadingImage, "can't upload image to VMWare", []error{fmt.Errorf("%s", target.TargetNameVMWare)}),
+				clienterrors.WorkerClientError(clienterrors.ErrorUploadingImage, "failed to upload image to AWS S3", []error{fmt.Errorf("%s", target.TargetNameAWSS3)}),
 			},
 		},
 		{
@@ -56,8 +56,8 @@ func TestOSBuildJobResultTargetErrors(t *testing.T) {
 				},
 			},
 			targetErrors: []*clienterrors.Error{
-				clienterrors.WorkerClientError(clienterrors.ErrorInvalidTargetConfig, "can't login to AWS", target.TargetNameAWS),
-				clienterrors.WorkerClientError(clienterrors.ErrorUploadingImage, "failed to upload image to AWS S3", target.TargetNameAWSS3),
+				clienterrors.WorkerClientError(clienterrors.ErrorInvalidTargetConfig, "can't login to AWS", []error{fmt.Errorf("%s", target.TargetNameAWS)}),
+				clienterrors.WorkerClientError(clienterrors.ErrorUploadingImage, "failed to upload image to AWS S3", []error{fmt.Errorf("%s", target.TargetNameAWSS3)}),
 			},
 		},
 		{

@@ -71,8 +71,8 @@ type OSBuildJobResult struct {
 // TargetErrors returns a slice of *clienterrors.Error gathered
 // from the job result's target results. If there were no target errors
 // then the returned slice will be empty.
-func (j *OSBuildJobResult) TargetErrors() []*clienterrors.Error {
-	targetErrors := []*clienterrors.Error{}
+func (j *OSBuildJobResult) TargetErrors() []error {
+	var targetErrors []error
 
 	for _, targetResult := range j.TargetResults {
 		if targetResult.TargetError != nil {
@@ -80,7 +80,7 @@ func (j *OSBuildJobResult) TargetErrors() []*clienterrors.Error {
 			// Add the target name to the error details, because the error reason
 			// may not contain any information to determine the type of the target
 			// which failed.
-			targetErrors = append(targetErrors, clienterrors.WorkerClientError(targetError.ID, targetError.Reason, targetResult.Name))
+			targetErrors = append(targetErrors, clienterrors.WorkerClientError(targetError.ID, targetError.Reason, []error{fmt.Errorf("%s", targetResult.Name)}))
 		}
 	}
 
