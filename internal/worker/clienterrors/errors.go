@@ -56,7 +56,7 @@ type Error struct {
 	Details interface{}     `json:"details,omitempty"`
 }
 
-func (e *Error) String() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("Code: %d, Reason: %s, Details: %v", e.ID, e.Reason, e.Details)
 }
 

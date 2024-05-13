@@ -10,6 +10,9 @@ import (
 	"github.com/osbuild/osbuild-composer/internal/worker/clienterrors"
 )
 
+// ensure clienterrors.Error implements the "error" interface
+var _ error = &clienterrors.Error{}
+
 type customErr struct{}
 
 func (ce *customErr) Error() string {
@@ -25,7 +28,7 @@ func TestErrorInterface(t *testing.T) {
 		{&customErr{}, "customErr"},
 	} {
 		wce := clienterrors.WorkerClientError(2, "reason", tc.err)
-		assert.Equal(t, fmt.Sprintf("Code: 2, Reason: reason, Details: %s", tc.expectedStr), wce.String())
+		assert.Equal(t, fmt.Sprintf("Code: 2, Reason: reason, Details: %s", tc.expectedStr), wce.Error())
 	}
 }
 
