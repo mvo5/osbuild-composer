@@ -21,11 +21,11 @@ func (ce *customErr) Error() string {
 
 func TestErrorInterface(t *testing.T) {
 	for _, tc := range []struct {
-		err         error
+		err         []error
 		expectedStr string
 	}{
-		{fmt.Errorf("some error"), "some error"},
-		{&customErr{}, "customErr"},
+		{[]error{fmt.Errorf("some error")}, "[some error]"},
+		{[]error{&customErr{}}, "[customErr]"},
 	} {
 		wce := clienterrors.WorkerClientError(2, "reason", tc.err)
 		assert.Equal(t, fmt.Sprintf("Code: 2, Reason: reason, Details: %s", tc.expectedStr), wce.Error())
@@ -34,35 +34,14 @@ func TestErrorInterface(t *testing.T) {
 
 func TestErrorJSONMarshal(t *testing.T) {
 	for _, tc := range []struct {
-		err         interface{}
+		err         []error
 		expectedStr string
 	}{
-		{fmt.Errorf("some-error"), "some-error"},
-		{[]error{fmt.Errorf("err1"), fmt.Errorf("err2")}, "[err1 err2]"},
-		{"random detail", "random detail"},
+		{[]error{fmt.Errorf("some-error")}, `["some-error"]`},
+		{[]error{fmt.Errorf("err1"), fmt.Errorf("err2")}, `["err1","err2"]`},
 	} {
 		json, err := json.Marshal(clienterrors.WorkerClientError(2, "reason", tc.err))
 		assert.NoError(t, err)
-		assert.Equal(t, fmt.Sprintf(`{"id":2,"reason":"reason","details":"%s"}`, tc.expectedStr), string(json))
+		assert.Equal(t, fmt.Sprintf(`{"id":2,"reason":"reason","details":%s}`, tc.expectedStr), string(json))
 	}
-}
-
-func TestErrorJSONMarshalDetectsNestedErrs(t *testing.T) {
-	details := struct {
-		Unrelated string
-		NestedErr error
-		Nested    struct {
-			DeepErr error
-		}
-	}{
-		Unrelated: "unrelated",
-		NestedErr: fmt.Errorf("some-nested-error"),
-		Nested: struct {
-			DeepErr error
-		}{
-			DeepErr: fmt.Errorf("deep-err"),
-		},
-	}
-	_, err := json.Marshal(clienterrors.WorkerClientError(2, "reason", details))
-	assert.Equal(t, `json: error calling MarshalJSON for type *clienterrors.Error: found nested error in {Unrelated:unrelated NestedErr:some-nested-error Nested:{DeepErr:deep-err}}: some-nested-error`, err.Error())
 }

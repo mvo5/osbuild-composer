@@ -2,6 +2,7 @@ package remotefile
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/osbuild/osbuild-composer/internal/worker/clienterrors"
 )
@@ -50,8 +51,8 @@ func (r *Resolver) Finish() []Spec {
 		if result.err != nil {
 			resultError = clienterrors.WorkerClientError(
 				clienterrors.ErrorRemoteFileResolution,
-				result.err.Error(),
-				result.url,
+				fmt.Errorf("cannot resolve %s: %v", result.url, result.err.Error()),
+				nil,
 			)
 		}
 

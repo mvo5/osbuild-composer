@@ -3,7 +3,6 @@ package clienterrors
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 )
 
 const (
@@ -53,65 +52,23 @@ type ClientErrorCode int
 type Error struct {
 	ID      ClientErrorCode `json:"id"`
 	Reason  string          `json:"reason"`
-	Details interface{}     `json:"details,omitempty"`
+	Details []error         `json:"details,omitempty"`
 }
 
 func (e *Error) Error() string {
 	return fmt.Sprintf("Code: %d, Reason: %s, Details: %v", e.ID, e.Reason, e.Details)
 }
 
-func ensureNoErrs(v reflect.Value) error {
-	switch v.Kind() {
-	case reflect.Interface:
-		if errIf, ok := v.Interface().(error); ok {
-			if errIf != nil {
-				return fmt.Errorf("%v", errIf.Error())
-			}
-		}
-	case reflect.Ptr:
-		if err := ensureNoErrs(v.Elem()); err != nil {
-			return err
-		}
-	case reflect.Struct:
-		for i := 0; i < v.NumField(); i++ {
-			if err := ensureNoErrs(v.Field(i)); err != nil {
-				return err
-			}
-		}
-	case reflect.Slice, reflect.Array:
-		for i := 0; i < v.Len(); i++ {
-			if err := ensureNoErrs(v.Index(i)); err != nil {
-				return err
-			}
-		}
-	case reflect.Map:
-		for _, key := range v.MapKeys() {
-			if err := ensureNoErrs(v.MapIndex(key)); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (e *Error) MarshalJSON() ([]byte, error) {
-	var details interface{}
-	switch v := e.Details.(type) {
-	case error:
-		details = v.Error()
-	case []error:
-		details = fmt.Sprintf("%v", v)
-	default:
-		if err := ensureNoErrs(reflect.ValueOf(v)); err != nil {
-			return nil, fmt.Errorf("found nested error in %+v: %v", e.Details, err)
-		}
-		details = e.Details
+	details := make([]string, 0, len(e.Details))
+	for _, err := range e.Details {
+		details = append(details, fmt.Sprintf("%v", err))
 	}
 
 	return json.Marshal(&struct {
 		ID      ClientErrorCode `json:"id"`
 		Reason  string          `json:"reason"`
-		Details interface{}     `json:"details,omitempty"`
+		Details []string        `json:"details,omitempty"`
 	}{
 		ID:      e.ID,
 		Reason:  e.Reason,
@@ -191,7 +148,7 @@ func (e *Error) IsDependencyError() bool {
 	}
 }
 
-func WorkerClientError(code ClientErrorCode, reason string, details interface{}) *Error {
+func WorkerClientError(code ClientErrorCode, reason string, details []error) *Error {
 	return &Error{
 		ID:      code,
 		Reason:  reason,
