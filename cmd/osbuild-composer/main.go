@@ -23,8 +23,8 @@ const (
 )
 
 var repositoryConfigs = []string{
-	"/etc/osbuild-composer",
-	"/usr/share/osbuild-composer",
+	"/etc/osbuild-composer/repositories",
+	"/usr/share/osbuild-composer/repositories",
 }
 
 func main() {

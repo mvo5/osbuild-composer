@@ -1,8 +1,10 @@
 package v2
 
 import (
+	"io/fs"
 	"testing"
 
+	"github.com/osbuild/images/data/repositories"
 	"github.com/osbuild/images/pkg/customizations/subscription"
 	"github.com/osbuild/images/pkg/disk"
 	"github.com/osbuild/images/pkg/distrofactory"
@@ -811,8 +813,7 @@ func TestGetImageRequests_NoRepositories(t *testing.T) {
 			Repositories:  []Repository{},
 		},
 	}
-	// NOTE: current directory is the location of this file, back up so it can use ./repositories/
-	rr, err := reporegistry.New([]string{"../../../"})
+	rr, err := reporegistry.New(nil, []fs.FS{repos.FS})
 	require.NoError(t, err)
 	got, err := request.GetImageRequests(distrofactory.NewDefault(), rr)
 	assert.NoError(t, err)
@@ -837,8 +838,7 @@ func TestGetImageRequests_BlueprintDistro(t *testing.T) {
 			Distro: common.ToPtr("fedora-39"),
 		},
 	}
-	// NOTE: current directory is the location of this file, back up so it can use ./repositories/
-	rr, err := reporegistry.New([]string{"../../../"})
+	rr, err := reporegistry.New(nil, []fs.FS{repos.FS})
 	require.NoError(t, err)
 	got, err := request.GetImageRequests(distrofactory.NewDefault(), rr)
 	assert.NoError(t, err)
