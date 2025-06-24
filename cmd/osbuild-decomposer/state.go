@@ -130,14 +130,13 @@ func (s *State) maybeBuildNext(ctx context.Context) {
 		s.current = nil
 		s.maybeBuildNext(ctx)
 	}()
-
 }
 
 var ibcliBinary = "image-builder"
 
 func runIbcli(ctx context.Context, outputDir string, req *v2.ComposeRequest) error {
 	// XXX: put into its own validate helper
-	if req.ImageRequests != nil && len(*req.ImageRequests) > 1 {
+	if req.ImageRequests != nil && (req.ImageRequest != nil || len(*req.ImageRequests) > 1) {
 		return fmt.Errorf("cannot handle more than one image req")
 	}
 	if req.Customizations != nil {
@@ -163,6 +162,16 @@ func runIbcli(ctx context.Context, outputDir string, req *v2.ComposeRequest) err
 		return fmt.Errorf("cannot fsync() %q", f.Name())
 	}
 
+	var imageType string
+	if req.ImageRequest != nil {
+		imageType = string(req.ImageRequest.ImageType)
+	} else if req.ImageRequests != nil {
+		reqs := *req.ImageRequests
+		// there should only be one item, we
+		// have already validated this
+		imageType = string(reqs[0].ImageType)
+	}
+
 	cmd := exec.Command(
 		ibcliBinary,
 		"build",
@@ -171,7 +180,7 @@ func runIbcli(ctx context.Context, outputDir string, req *v2.ComposeRequest) err
 		"--blueprint", bpPath,
 		"--output-dir", outputDir,
 		"--distro", req.Distribution,
-		string(req.ImageRequest.ImageType),
+		imageType,
 		// XXX: handle architecutures, repositories?
 	)
 
